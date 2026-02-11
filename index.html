@@ -15,7 +15,7 @@
     max-width: 1536px;
     height: auto;
     aspect-ratio: 1536 / 1024;
-    background-image: url('Circuit 4.jpeg');
+    background-image: url('images/Circuit.jpeg'); /* circuit dans le dossier images */
     background-size: cover;
     background-position: center;
     position: relative;
@@ -32,7 +32,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    pointer-events: none; /* pour éviter les interactions */
+    pointer-events: none; /* empêcher les interactions */
   }
 
   .car img {
@@ -95,7 +95,7 @@ function drawCars() {
     div.style.top = TRACK_POINTS[car.pos].y + 'px';
 
     const img = document.createElement('img');
-    img.src = car.img || 'voiture_default.png'; // PNG depuis Firebase
+    img.src = car.img || 'images/Pin_default.png'; // PNG depuis Firebase
     img.alt = car.name || 'Voiture';
 
     div.appendChild(img);
@@ -103,7 +103,7 @@ function drawCars() {
   }
 }
 
-// Écoute la base Firebase
+// Écoute Firebase et met à jour les voitures
 firebase.database().ref('lemans/cars').on('value', snap => {
   cars = snap.val() || {};
   drawCars();
