@@ -2,103 +2,62 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>24h du Mans - Prototype</title>
+<title>24h du Mans - Test voiture</title>
 <style>
-  body {
-    font-family: sans-serif;
-    background: #f0f0f0;
-    padding: 20px;
-  }
-
   #track {
     width: 100%;
     max-width: 1536px;
-    height: auto;
-    aspect-ratio: 1536 / 1024; /* largeur / hauteur du circuit */
-    background-image: url('images/Circuit.jpeg'); /* circuit dans dossier images */
-    background-size: cover;
-    background-position: center;
+    aspect-ratio: 1536 / 1024;
+    background: url('images/Circuit.jpeg') center/cover no-repeat;
     position: relative;
-    margin-bottom: 20px;
     border: 2px solid #333;
-    border-radius: 10px;
-    overflow: hidden;
   }
 
   .car {
     position: absolute;
-    pointer-events: none; /* empêcher toute interaction */
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 
   .car img {
-    width: 40px;  /* largeur de la voiture sur le circuit */
-    height: auto; /* garde les proportions originales */
-    display: block;
+    width: 40px;   /* largeur de la voiture */
+    height: auto;  /* garde les proportions */
   }
 </style>
 </head>
 <body>
-<h1>24h du Mans - Prototype</h1>
+<h1>Test voiture</h1>
 <div id="track"></div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ====== CONFIG FIREBASE ======
-const firebaseConfig = {
-  apiKey: "AIzaSyA0--XNG6-IxcEduQbGWhtqzBVdLJ0uNZE",
-  authDomain: "le-124.firebaseapp.com",
-  databaseURL: "https://le-124-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "le-124",
-  storageBucket: "le-124.firebasestorage.app",
-  messagingSenderId: "691928817966",
-  appId: "1:691928817966:web:9c6cbddbc7332dabb11abf",
-  measurementId: "G-0Q4ZDP0868"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-// 48 points simplifiés de la piste
 const TRACK_POINTS = [
- {"x":845,"y":700}, {"x":820,"y":690}, {"x":790,"y":680}, {"x":755,"y":670},
- {"x":720,"y":665}, {"x":680,"y":665}, {"x":640,"y":670}, {"x":600,"y":680},
- {"x":560,"y":695}, {"x":520,"y":715}, {"x":490,"y":740}, {"x":460,"y":770},
- {"x":435,"y":800}, {"x":415,"y":835}, {"x":400,"y":875}, {"x":395,"y":915},
- {"x":405,"y":955}, {"x":435,"y":985}, {"x":480,"y":1000}, {"x":530,"y":1010},
- {"x":590,"y":1012}, {"x":650,"y":1010}, {"x":710,"y":1000}, {"x":770,"y":985},
- {"x":820,"y":970}, {"x":880,"y":950}, {"x":940,"y":930}, {"x":990,"y":905},
- {"x":1035,"y":875}, {"x":1070,"y":840}, {"x":1100,"y":800}, {"x":1125,"y":760},
- {"x":1140,"y":720}, {"x":1150,"y":680}, {"x":1155,"y":640}, {"x":1160,"y":600},
- {"x":1158,"y":560}, {"x":1150,"y":520}, {"x":1135,"y":480}, {"x":1110,"y":445},
- {"x":1080,"y":415}, {"x":1045,"y":390}, {"x":1000,"y":375}, {"x":955,"y":370},
- {"x":910,"y":375}
+  {"x":845,"y":700}  // un seul point pour tester
 ];
 
-let cars = {};
+// Simulation d’une voiture directement dans JS (pas besoin de Firebase pour le test)
+const cars = {
+  car1: {
+    name: "Voiture Rouge",
+    pos: 0,
+    img: "images/Pin_red.png"
+  }
+};
 
-// Dessine les voitures sur la piste
 function drawCars() {
   const trackDiv = document.getElementById('track');
   trackDiv.innerHTML = '';
-
+  
   for(const id in cars) {
     const car = cars[id];
-    if(car.pos === undefined || car.pos >= TRACK_POINTS.length) continue;
-
     const div = document.createElement('div');
     div.className = 'car';
 
     const img = document.createElement('img');
-    img.src = car.img || 'images/Pin_default.png';
-    img.alt = car.name || 'Voiture';
+    img.src = car.img;
+    img.alt = car.name;
 
-    // Ajuster la position après chargement de l'image pour centrer la voiture
+    // On centre la voiture sur le point une fois l'image chargée
     img.onload = () => {
-      div.style.left = (TRACK_POINTS[car.pos].x - img.width / 2) + 'px';
-      div.style.top  = (TRACK_POINTS[car.pos].y - img.height / 2) + 'px';
+      div.style.left = (TRACK_POINTS[car.pos].x - img.width/2) + 'px';
+      div.style.top  = (TRACK_POINTS[car.pos].y - img.height/2) + 'px';
     };
 
     div.appendChild(img);
@@ -106,11 +65,7 @@ function drawCars() {
   }
 }
 
-// Écoute Firebase et met à jour les voitures
-firebase.database().ref('lemans/cars').on('value', snap => {
-  cars = snap.val() || {};
-  drawCars();
-});
+drawCars();
 </script>
 </body>
 </html>
