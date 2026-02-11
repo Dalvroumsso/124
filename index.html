@@ -4,42 +4,52 @@
 <meta charset="UTF-8">
 <title>24h du Mans - Prototype</title>
 <style>
-  body { font-family: sans-serif; background: #f0f0f0; padding: 20px; }
+  body {
+    font-family: sans-serif;
+    background: #f0f0f0;
+    padding: 20px;
+  }
+
   #track {
-    width: 1536px;
-    height: 1024px;
+    width: 100%;
+    max-width: 1536px;
+    height: auto;
+    aspect-ratio: 1536 / 1024;
     background-image: url('Circuit 4.jpeg');
     background-size: cover;
     background-position: center;
     position: relative;
     margin-bottom: 20px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
-  .car { 
-    width: 40px;    
-    height: 24px;   
-    position: absolute; 
-    border-radius: 4px; 
-    color: white; 
-    text-align: center; 
-    font-size: 16px; 
-    line-height: 24px; 
+  .car {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* pour éviter les interactions */
   }
 
-  .car-button {
-    margin: 2px;
+  .car img {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 </style>
 </head>
 <body>
 <h1>24h du Mans - Prototype</h1>
 <div id="track"></div>
-<button id="addCar">Ajouter une voiture</button>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ====== TA CONFIG FIREBASE ======
+// ====== CONFIG FIREBASE ======
 const firebaseConfig = {
   apiKey: "AIzaSyA0--XNG6-IxcEduQbGWhtqzBVdLJ0uNZE",
   authDomain: "le-124.firebaseapp.com",
@@ -53,131 +63,51 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// 48 cases simplifiées
+// 48 points simplifiés de la piste
 const TRACK_POINTS = [
- {"x":845,"y":700},
- {"x":820,"y":690},
- {"x":790,"y":680},
- {"x":755,"y":670},
- {"x":720,"y":665},
- {"x":680,"y":665},
- {"x":640,"y":670},
- {"x":600,"y":680},
- {"x":560,"y":695},
- {"x":520,"y":715},
- {"x":490,"y":740},
- {"x":460,"y":770},
- {"x":435,"y":800},
- {"x":415,"y":835},
- {"x":400,"y":875},
- {"x":395,"y":915},
-
- {"x":405,"y":955},
- {"x":435,"y":985},
- {"x":480,"y":1000},
- {"x":530,"y":1010},
- {"x":590,"y":1012},
- {"x":650,"y":1010},
- {"x":710,"y":1000},
- {"x":770,"y":985},
- {"x":820,"y":970},
-
- {"x":880,"y":950},
- {"x":940,"y":930},
- {"x":990,"y":905},
- {"x":1035,"y":875},
- {"x":1070,"y":840},
- {"x":1100,"y":800},
- {"x":1125,"y":760},
- {"x":1140,"y":720},
- {"x":1150,"y":680},
- {"x":1155,"y":640},
-
- {"x":1160,"y":600},
- {"x":1158,"y":560},
- {"x":1150,"y":520},
- {"x":1135,"y":480},
- {"x":1110,"y":445},
- {"x":1080,"y":415},
- {"x":1045,"y":390},
- {"x":1000,"y":375},
- {"x":955,"y":370},
+ {"x":845,"y":700}, {"x":820,"y":690}, {"x":790,"y":680}, {"x":755,"y":670},
+ {"x":720,"y":665}, {"x":680,"y":665}, {"x":640,"y":670}, {"x":600,"y":680},
+ {"x":560,"y":695}, {"x":520,"y":715}, {"x":490,"y":740}, {"x":460,"y":770},
+ {"x":435,"y":800}, {"x":415,"y":835}, {"x":400,"y":875}, {"x":395,"y":915},
+ {"x":405,"y":955}, {"x":435,"y":985}, {"x":480,"y":1000}, {"x":530,"y":1010},
+ {"x":590,"y":1012}, {"x":650,"y":1010}, {"x":710,"y":1000}, {"x":770,"y":985},
+ {"x":820,"y":970}, {"x":880,"y":950}, {"x":940,"y":930}, {"x":990,"y":905},
+ {"x":1035,"y":875}, {"x":1070,"y":840}, {"x":1100,"y":800}, {"x":1125,"y":760},
+ {"x":1140,"y":720}, {"x":1150,"y":680}, {"x":1155,"y":640}, {"x":1160,"y":600},
+ {"x":1158,"y":560}, {"x":1150,"y":520}, {"x":1135,"y":480}, {"x":1110,"y":445},
+ {"x":1080,"y":415}, {"x":1045,"y":390}, {"x":1000,"y":375}, {"x":955,"y":370},
  {"x":910,"y":375}
-]
-
-;
+];
 
 let cars = {};
-let carCount = 0;
 
 // Dessine les voitures sur la piste
-function drawCars(){
+function drawCars() {
   const trackDiv = document.getElementById('track');
   trackDiv.innerHTML = '';
-  for(const id in cars){
+  for(const id in cars) {
     const car = cars[id];
+    if(car.pos === undefined || car.pos >= TRACK_POINTS.length) continue;
+
     const div = document.createElement('div');
-    div.className='car';
-    div.style.left = TRACK_POINTS[car.pos].x+'px';
-    div.style.top = TRACK_POINTS[car.pos].y+'px';
-    div.style.background = car.color;
-    div.textContent = car.name[0];
+    div.className = 'car';
+    div.style.left = TRACK_POINTS[car.pos].x + 'px';
+    div.style.top = TRACK_POINTS[car.pos].y + 'px';
+
+    const img = document.createElement('img');
+    img.src = car.img || 'voiture_default.png'; // PNG depuis Firebase
+    img.alt = car.name || 'Voiture';
+
+    div.appendChild(img);
     trackDiv.appendChild(div);
   }
 }
 
-// Crée les boutons Avancer / Reculer pour toutes les voitures
-function createButtons(){
-  // Supprime les anciens boutons
-  document.querySelectorAll('.car-button').forEach(btn => btn.remove());
-
-  for(const id in cars){
-    const car = cars[id];
-
-    // Bouton Avancer
-    const btnForward = document.createElement('button');
-    btnForward.textContent = "Avancer " + car.name;
-    btnForward.className = 'car-button';
-    btnForward.onclick = () => {
-      firebase.database().ref('lemans/cars/'+id+'/pos').transaction(pos=>{
-        return Math.min((pos||0)+1, TRACK_POINTS.length-1);
-      });
-    };
-    document.body.appendChild(btnForward);
-
-    // Bouton Reculer
-    const btnBackward = document.createElement('button');
-    btnBackward.textContent = "Reculer " + car.name;
-    btnBackward.className = 'car-button';
-    btnBackward.onclick = () => {
-      firebase.database().ref('lemans/cars/'+id+'/pos').transaction(pos=>{
-        return Math.max((pos||0)-1, 0);
-      });
-    };
-    document.body.appendChild(btnBackward);
-  }
-}
-
-// Ecoute la base Firebase
-firebase.database().ref('lemans/cars').on('value', snap=>{
+// Écoute la base Firebase
+firebase.database().ref('lemans/cars').on('value', snap => {
   cars = snap.val() || {};
   drawCars();
-  createButtons(); // recrée les boutons à chaque changement
 });
-
-// Ajouter une voiture
-document.getElementById('addCar').onclick = ()=>{
-  const name = prompt("Nom de la voiture ?");
-  if(!name) return;
-  const id = 'car'+carCount++;
-  const color = 'hsl(' + Math.floor(Math.random()*360) + ',70%,55%)';
-  firebase.database().ref('lemans/cars/'+id).set({name,pos:0,color});
-};
 </script>
 </body>
 </html>
-
-
-
-
-
